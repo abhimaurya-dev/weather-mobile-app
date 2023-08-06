@@ -1,12 +1,17 @@
 import { Image, StyleSheet, Text, View } from "react-native";
 import React from "react";
 
-const ShowWeather = () => {
+const ShowWeather = ({ weatherInfo }) => {
+  const weatherIconUrl = `../assets/weather/1.png`;
+  // console.log(weatherInfo);
   return (
     <View style={styles.container}>
-      <Text style={styles.weatherCondition}>ShowWeather</Text>
       <View>
-        <Image source={require("../assets/weather.png")} style={styles.img} />
+        {/* correct image */}
+        <View style={styles.data}>
+          <Image source={require(weatherIconUrl)} style={styles.img} />
+          <Text style={styles.weatherText}>{weatherInfo.value}</Text>
+        </View>
         <View>
           <Text>wind speed</Text>
           <Text>wind direction</Text>
@@ -29,12 +34,17 @@ const styles = StyleSheet.create({
     backgroundColor: "#fbfcf8",
     borderRadius: 12,
   },
-  weatherCondition: {
-    fontSize: 24,
-    marginLeft: 6,
-  },
   img: {
     height: 90,
     width: 90,
+  },
+  data: {
+    flexDirection: "row",
+    // justifyContent: "center",
+    alignItems: "center",
+  },
+  weatherText: {
+    fontSize: 32,
+    fontWeight: 300,
   },
 });

@@ -1,4 +1,11 @@
-import { FlatList, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  FlatList,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+  TouchableWithoutFeedback,
+} from "react-native";
 import React, { useEffect, useState } from "react";
 import Header from "../components/Header";
 import ShowWeather from "../components/ShowWeather";
@@ -9,10 +16,17 @@ import { REACT_APP_API_KEY } from "@env";
 const url =
   "http://dataservice.accuweather.com/locations/v1/cities/autocomplete";
 
+const infoUrl = "http://dataservice.accuweather.com/currentconditions/v1/";
+
 const Weather = () => {
   const [placeholder, setPlaceholder] = useState("location");
   const [location, setLocation] = useState("");
   const [locationList, setLocationList] = useState([]);
+  const [locationKey, setLocationKey] = useState("");
+  const [weatherInfo, setWeatherInfo] = useState({});
+
+  const onLocationSelect = () => {};
+
   useEffect(() => {
     if (location !== "") {
       axios
@@ -25,6 +39,7 @@ const Weather = () => {
         })
         .then((response) => {
           let locations = new Array();
+          // console.log("wheather log");
           response.data.forEach((location) => {
             locations.push({
               key: location.Key,
@@ -41,6 +56,28 @@ const Weather = () => {
       setLocationList([]);
     }
   }, [location]);
+
+  useEffect(() => {
+    if (locationKey !== "") {
+      axios
+        .get(infoUrl + locationKey, {
+          params: {
+            apikey: process.env.REACT_APP_API_KEY,
+            language: "en-us",
+          },
+        })
+        .then((response) => {
+          // console.log(response.data[0].Temperature.Metric);
+          setWeatherInfo({
+            value: response.data[0].Temperature.Metric.Value,
+            unit: response.data[0].Temperature.Metric.Unit,
+            icon: response.data[0].WeatherIcon,
+          });
+        })
+        .catch((error) => console.log(error));
+    }
+  }, [locationKey]);
+
   return (
     <>
       <Header />
@@ -61,13 +98,26 @@ const Weather = () => {
                 data={locationList}
                 renderItem={({ item }) => {
                   return (
-                    <Text style={styles.autoCompleteText}>
-                      {item.localizedName +
-                        "," +
-                        item.country +
-                        "," +
-                        item.administrativeArea}
-                    </Text>
+                    <TouchableWithoutFeedback
+                      onPress={() => {
+                        setLocation(
+                          item.localizedName +
+                            "," +
+                            item.country +
+                            "," +
+                            item.administrativeArea
+                        );
+                        setLocationKey(item.key);
+                      }}
+                    >
+                      <Text style={styles.autoCompleteText}>
+                        {item.localizedName +
+                          "," +
+                          item.country +
+                          "," +
+                          item.administrativeArea}
+                      </Text>
+                    </TouchableWithoutFeedback>
                   );
                 }}
                 keyExtractor={(item) => item.key}
@@ -76,7 +126,7 @@ const Weather = () => {
           )}
         </View>
       </View>
-      <ShowWeather />
+      <ShowWeather weatherInfo={weatherInfo} />
     </>
   );
 };
